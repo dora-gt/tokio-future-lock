@@ -27,6 +27,7 @@ fn main() {
         Delay::new(Instant::now() + Duration::from_millis(1000))
             .map_err(|err| ())
             .and_then(move|_|{
+                // guard could be moved into a closure
                 *guard += 1;
                 debug!("the value is now: {}", *guard);
                 drop(guard);
