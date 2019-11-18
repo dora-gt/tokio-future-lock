@@ -15,15 +15,15 @@ fn main() {
     env_logger::init();
 
     let lock = Lock::new(0);
-    let updator_1 = MyDataUpdator::new(lock.clone());
-    let updator_2 = MyDataUpdator::new(lock.clone());
+    let updater_1 = MyDataUpdater::new(lock.clone());
+    let updater_2 = MyDataUpdater::new(lock.clone());
 
     let mut runtime = RuntimeBuilder::new()
         .panic_handler(|err| std::panic::resume_unwind(err))
         .build()
         .unwrap();
 
-    let fut_1 = updator_1.and_then(|mut guard|{
+    let fut_1 = updater_1.and_then(|mut guard|{
         Delay::new(Instant::now() + Duration::from_millis(1000))
             .map_err(|err| ())
             .and_then(move|_|{
@@ -34,7 +34,7 @@ fn main() {
                 Ok(())
         })
     });
-    let fut_2 = updator_2.and_then(|mut guard|{
+    let fut_2 = updater_2.and_then(|mut guard|{
         *guard *= 2;
         debug!("the value is now: {}", *guard);
         drop(guard);
@@ -45,19 +45,19 @@ fn main() {
     runtime.block_on_all(fut_2);
 }
 
-struct MyDataUpdator {
+struct MyDataUpdater {
     data: Lock<u8>,
 }
 
-impl MyDataUpdator {
+impl MyDataUpdater {
     fn new(lock: Lock<u8>) -> Self {
-        MyDataUpdator {
+        MyDataUpdater {
             data: lock,
         }
     }
 }
 
-impl Future for MyDataUpdator {
+impl Future for MyDataUpdater {
     type Item = LockGuard<u8>;
     type Error = ();
 
